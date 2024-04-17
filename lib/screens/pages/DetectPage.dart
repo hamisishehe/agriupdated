@@ -1,11 +1,14 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tflite/tflite.dart';
 import 'package:typewritertext/typewritertext.dart';
 import '../../contants/appcolors.dart';
+
 
 class DetectPage extends StatefulWidget {
   const DetectPage({Key? key}) : super(key: key);
@@ -21,6 +24,12 @@ class _DetectPageState extends State<DetectPage> {
   bool _loading = false;
   bool isvisible = false;
 
+  final gemini = Gemini.instance;
+
+  String result='';
+  bool isLoading = false;
+
+
   Future<void> pickImage() async {
     final picker = ImagePicker();
     final pickedImage = await picker.pickImage(source: ImageSource.gallery);
@@ -30,9 +39,33 @@ class _DetectPageState extends State<DetectPage> {
       _image = File(pickedImage.path);
     });
     if (_image != null) { // Check if _image is not null
+      setState(() {
+        isLoading = true; // Show progress indicator
+      });
+      final file = File(pickedImage.path);
+      gemini.textAndImage(
+        text: "The following picture is the bean leaf so need  to classfy when bean leaf is helthy or is afftected of angular leaf spot, bean rust so when is affected by the disease so explain causes and treatment , if image is not bean leaf display the image is not related to the bean leaf and explain briefly",
+        images: [file.readAsBytesSync()],
+      ).then((value) {
+        setState(() {
+          result = value?.output ?? ''; // Update output variable with the result
+          isvisible= true;
+          isLoading = false;
+          print(value?.output ?? '');
+        });
+      }).catchError((e) {
+        log('textAndImageInput', error: e);
+        setState(() {
+          isLoading = false; // Hide progress indicator
+        });
+      });
       classifyImage(_image!);
     }
   }
+
+
+
+
 
   Future<void> classifyImage(File image) async {
     var output = await Tflite.runModelOnImage(
@@ -81,6 +114,7 @@ class _DetectPageState extends State<DetectPage> {
               margin: EdgeInsets.only(left: 10,top: 90, right: 10),
               width: MediaQuery.of(context).size.width,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   InkWell(
                     onTap: pickImage,
@@ -102,133 +136,55 @@ class _DetectPageState extends State<DetectPage> {
                   SizedBox(
                     height: 5,
                   ),
-                  _loading
-                      ? Center(child: CircularProgressIndicator())
-                      : _outputs != null
-                      ? _outputs![0]["confidence"] > 0.5 // Check if confidence is high enough
-                      ? Text(
-                    "${_outputs![0]["label"]} Confidence: ${(_outputs![0]["confidence"] * 100).toStringAsFixed(2)}%",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 20.0,
-                      backgroundColor: Colors.white,
-                    ),
+                  // _loading
+                  //     ? Center(child: CircularProgressIndicator())
+                  //     : _outputs != null
+                  //     ? _outputs![0]["confidence"] > 0.5 // Check if confidence is high enough
+                  //     ? Text(
+                  //   "${_outputs![0]["label"]} Confidence: ${(_outputs![0]["confidence"] * 100).toStringAsFixed(2)}%",
+                  //   style: TextStyle(
+                  //     color: Colors.black,
+                  //     fontSize: 20.0,
+                  //     backgroundColor: Colors.white,
+                  //   ),
+                  // )
+                  //     : Text(
+                  //   "Unable to detect",
+                  //   style: TextStyle(
+                  //     color: Colors.red,
+                  //     fontSize: 20.0,
+                  //     backgroundColor: Colors.white,
+                  //   ),
+                  // )
+                  //     : Container(),
+
+
+                     SingleChildScrollView(
+        padding: EdgeInsets.only(left: 5.0,top: 10,right: 5),
+        child:
+
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+
+            if (isLoading) // Show circular progress indicator if isLoading is true
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            if (!isLoading && result.isNotEmpty) // Show output if available and not loading
+              Text(
+                  '${result}',
+                  style: TextStyle(
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.bold,
                   )
-                      : Text(
-                    "Unable to detect",
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 20.0,
-                      backgroundColor: Colors.white,
-                    ),
-                  )
-                      : Container(),
+              ),
 
 
-                  Visibility(
-                    visible: isvisible,
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-
-                      Visibility(
-                        visible: isvisible,
-                        child: TypeWriterText(
-                        text: Text(
-                        'Angular Leaf Spot of Beans:',
-                          style: TextStyle(
-                            fontSize: 20.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        duration: Duration(milliseconds: 50),
-                                          ),
-                      ),
-
-                          SizedBox(height: 16.0),
-                      TypeWriterText(
-                        text: Text(
-                          'Angular leaf spot is a common bacterial disease affecting beans (Phaseolus vulgaris) and other related crops. It is characterized by small, angular lesions on the leaves, which eventually enlarge and coalesce, leading to defoliation and reduced yield.',
-                        ),
-                        duration: Duration(milliseconds: 50),
-                      ),
-
-                          SizedBox(height: 16.0),
-                          Text(
-                            'Causes:',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 8.0),
-                      TypeWriterText(
-                        text: Text(
-                          'Angular leaf spot is caused by the bacterium Pseudomonas syringae pv. phaseolicola. This bacterium thrives in warm, humid conditions and can survive in crop debris or on infected seeds. It spreads through splashing water, wind, and farming tools, facilitating its transmission within and between fields.',
-                        ),
-                        duration: Duration(milliseconds: 50),
-                      ),
-
-                          SizedBox(height: 16.0),
-                          Text(
-                            'Treatment:',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 8.0),
-                          Text(
-                            'Cultural Practices:',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 8.0),
-                          Text('- Crop Rotation: Rotate beans with non-host crops to reduce pathogen buildup in the soil.'),
-                          Text('- Sanitation: Remove and destroy infected plant debris to prevent the spread of the bacteria.'),
-                          Text('- Avoid Overhead Irrigation: Minimize splashing water, as it helps in the dissemination of the bacteria.'),
-                          SizedBox(height: 16.0),
-                          Text(
-                            'Chemical Control:',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 8.0),
-                          Text('- Copper-based Fungicides: Copper-based fungicides, such as Bordeaux mixture, can be applied preventively to protect plants from bacterial infection. However, their efficacy may vary depending on the severity of the disease and environmental conditions.'),
-                          Text('- Bactericides: Some bactericides, like streptomycin, may be effective in controlling angular leaf spot. However, their use should be judicious to prevent the development of bacterial resistance.'),
-                          SizedBox(height: 16.0),
-                          Text(
-                            'Resistant Varieties:',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 8.0),
-                          Text('- Planting resistant varieties is one of the most effective methods to manage angular leaf spot. Breeding programs have developed bean cultivars with genetic resistance to the disease. Consult with local agricultural extension services or seed suppliers for information on resistant varieties suitable for your region.'),
-                          SizedBox(height: 16.0),
-                          Text(
-                            'Biological Control:',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 8.0),
-                          Text('- Biological control agents, such as certain strains of beneficial bacteria and fungi, can help suppress the population of Pseudomonas syringae pv. phaseolicola. However, their effectiveness may vary, and more research is needed to optimize their use in managing angular leaf spot.'),
-                          SizedBox(height: 16.0),
-                          Text(
-                            'Integrated Pest Management (IPM):',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 8.0),
-                          Text('- Implementing an integrated pest management approach that combines cultural, chemical, and biological control methods tailored to the specific conditions of your farm can help effectively manage angular leaf spot while minimizing environmental impact and production costs.'),
-                        ],
-                      ),
-                    ),
-                  ),
+          ],
+        ),
+      ),
                 ],
               ),
             ),
@@ -264,9 +220,13 @@ class _DetectPageState extends State<DetectPage> {
       ),
       
       
-      floatingActionButton: IconButton(onPressed: (){
-        pickImage();
-      }, icon: Image.asset("assets/images/camera.png", color: AppColors.primary_color, scale: 9,)),
+      floatingActionButton: FloatingActionButton(
+        onPressed: (){
+          pickImage();
+        },
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Image.asset("assets/images/camera.png", color: AppColors.primary_color, scale: 9,),
+      )
     );
   }
 }
