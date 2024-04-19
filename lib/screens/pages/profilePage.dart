@@ -1,6 +1,15 @@
 
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
+import 'package:agriconnectfinal/contants/urls.dart';
+import 'package:agriconnectfinal/model/user.dart';
+import 'package:agriconnectfinal/screens/auth/loginPage.dart';
+import 'package:agriconnectfinal/screens/auth/welcome.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../contants/appcolors.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -11,6 +20,55 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+
+  late String token;
+
+  Future<void> getToken() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    setState(() {
+      token = pref.getString("usertoken")!;
+    });
+  }
+
+
+  Future<void> logout() async{
+
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    await pref.clear();
+    Get.offAll(WelcomeScreen());
+  }
+
+  Future<UserModel> userprofile() async {
+    String profileurl = ApiUrls.mainurl+"user/profile";
+
+    var response = await http.get(
+      Uri.parse(profileurl),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+    if (response.statusCode == 200) {
+      final user = jsonDecode(response.body);
+      return UserModel.fromJson(user);
+      print(user);
+    } else {
+      throw Exception(response.statusCode);
+    }
+    print("token is $token");
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeProfile();
+  }
+  Future<void> _initializeProfile() async {
+    await getToken();
+    await userprofile();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,26 +118,34 @@ class _ProfilePageState extends State<ProfilePage> {
                     SizedBox(width: 20,),
                     Padding(
                       padding: const EdgeInsets.only(top: 68.0),
-                      child: Column(
-                        children: [
-                          Text("Full name", style: TextStyle(
-                              color: AppColors.text_black,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold
-                          ),),
-                          SizedBox(height: 3,),
-                          Text("+255653918817", style: TextStyle(
-                              color: AppColors.text_black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold
-                          ),),
-                          SizedBox(height: 6,),
+                      child: FutureBuilder<UserModel>(
+                        future: userprofile(),
+                        builder: (context, snapshot) {
+                          if(snapshot.hasData){
+                            return    Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(snapshot.data!.fullname, style: TextStyle(
+                                    color: AppColors.text_black,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold
+                                ),),
+                                SizedBox(height: 3,),
+                                Text(snapshot.data!.email, style: TextStyle(
+                                    color: AppColors.text_black,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold
+                                ),),
+                                SizedBox(height: 6,),
 
+                              ],
+                            );
+                          }
+                          else {
+                            return Text("");
+                          }
 
-
-
-                        ],
-                      ),
+                        },),
                     ),
                     Spacer(),
                     Container(
@@ -104,6 +170,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
+
+
+
 
             SizedBox(height: 5,),
             ListTile(
@@ -139,6 +208,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 trailing: Icon(Icons.arrow_forward_ios)
             ),
             ListTile(
+              onTap: (){
+                logout();
+              },
                 autofocus: true,
                 title:  Text("Logout", style: TextStyle(
                     color: AppColors.text_black.withOpacity(0.5),

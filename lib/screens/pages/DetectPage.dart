@@ -118,46 +118,28 @@ class _DetectPageState extends State<DetectPage> {
                 children: [
                   InkWell(
                     onTap: pickImage,
-                    child: Container(
-                      height: 250,
-                      width: MediaQuery.of(context).size.width,
-                      child: _image != null
-                          ? Image.file(
-                        _image!,
-                        fit: BoxFit.cover,
-                      )
-                          : Image.asset(
-                        "assets/images/camera.png",
-                        scale: 8,
-                        color: AppColors.primary_color,
+                    child: Card(
+                      elevation: 5,
+                      child: Container(
+                        height: 250,
+                        width: MediaQuery.of(context).size.width,
+                        child: _image != null
+                            ? Image.file(
+                          _image!,
+                          fit: BoxFit.cover,
+                        )
+                            : Image.asset(
+                          "assets/images/camera.png",
+                          scale: 8,
+                          color: AppColors.primary_color,
+                        ),
+
                       ),
                     ),
                   ),
                   SizedBox(
                     height: 5,
                   ),
-                  // _loading
-                  //     ? Center(child: CircularProgressIndicator())
-                  //     : _outputs != null
-                  //     ? _outputs![0]["confidence"] > 0.5 // Check if confidence is high enough
-                  //     ? Text(
-                  //   "${_outputs![0]["label"]} Confidence: ${(_outputs![0]["confidence"] * 100).toStringAsFixed(2)}%",
-                  //   style: TextStyle(
-                  //     color: Colors.black,
-                  //     fontSize: 20.0,
-                  //     backgroundColor: Colors.white,
-                  //   ),
-                  // )
-                  //     : Text(
-                  //   "Unable to detect",
-                  //   style: TextStyle(
-                  //     color: Colors.red,
-                  //     fontSize: 20.0,
-                  //     backgroundColor: Colors.white,
-                  //   ),
-                  // )
-                  //     : Container(),
-
 
                      SingleChildScrollView(
         padding: EdgeInsets.only(left: 5.0,top: 10,right: 5),
@@ -222,10 +204,25 @@ class _DetectPageState extends State<DetectPage> {
       
       floatingActionButton: FloatingActionButton(
         onPressed: (){
-          pickImage();
+          // pickImage();
         },
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Image.asset("assets/images/camera.png", color: AppColors.primary_color, scale: 9,),
+        child: PopupMenuButton(
+          itemBuilder: (context) => <PopupMenuEntry> [
+            PopupMenuItem(
+              value: "Take Picture",
+              child: IconButton(onPressed: (){}, icon: Icon(Icons.camera_alt, color: AppColors.primary_color,))
+            ),
+
+            PopupMenuItem(
+                value: "Take Picture",
+                child: IconButton(onPressed: (){
+                  pickImage();
+                }, icon: Icon(Icons.photo, color: AppColors.primary_color,))
+            ),
+
+          ],
+        ),
       )
     );
   }

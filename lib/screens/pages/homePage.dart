@@ -1,5 +1,8 @@
+import 'package:agriconnectfinal/contants/urls.dart';
+import 'package:agriconnectfinal/model/post.dart';
 import 'package:dialog_flowtter/dialog_flowtter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_slideshow/flutter_image_slideshow.dart';
 import 'package:gif_view/gif_view.dart';
 import 'package:http/http.dart' as http;
 import '../../contants/appcolors.dart';
@@ -67,6 +70,18 @@ class _HomePageState extends State<HomePage> {
   }
 
 
+  Future<List<PostModel>> getpost() async {
+    var response =
+    await http.get(Uri.parse("https://agriconnect.ahsoftware.site/api/updates"));
+
+    if (response.statusCode == 200) {
+      List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => PostModel.fromJson(json)).toList();
+
+    } else {
+      throw Exception('Error fetching posts');
+    }
+  }
   String _convertTimestampToTime(int timestamp, int timezoneOffset) {
     final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000, isUtc: true);
     final DateTime localDateTime = dateTime.add(Duration(seconds: timezoneOffset));
@@ -78,6 +93,8 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _fetchWeather();
   }
+
+  var hours = DateTime.now().hour;
 
 
 
@@ -115,54 +132,88 @@ class _HomePageState extends State<HomePage> {
           ),
 
           Container(
-            margin: EdgeInsets.only(left: 10,right: 10,top: 80),
+            margin: EdgeInsets.only(left: 10,right: 10,top: 90),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("Updates", style: TextStyle(
-                      color: AppColors.text_black,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold
-                  ),),
-                ),
+
 
                 Container(
                   height: 200,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 6,
-                    itemBuilder: (BuildContext context, int index) {
-                      return Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15)
-                        ),
-                        child: Container(
-                          width: 300,
-                          height: 100,
-                          decoration: BoxDecoration(
-                              image: DecorationImage(image: AssetImage("assets/images/p2.jpg"), fit: BoxFit.cover),
-                              borderRadius: BorderRadius.circular(15)
-                          ),
-                          child: Container(
-                            margin: EdgeInsets.only(top: 140),
-                            width: MediaQuery.of(context).size.width,
-                            height: 50,
-                            color: AppColors.primary_color.withOpacity(0.6),
-                            alignment: Alignment.center,
-                            child: Text("Angular leaf spot", style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold
-                            ),),
-                          ),
+                  child: FutureBuilder<List<PostModel>>(
+                      future: getpost(),
+                    builder: (context, snapshot) {
 
-                        ),
+                        if(snapshot.hasData){
+                          return ImageSlideshow(
+                            width: double.infinity,
+                            initialPage: 0,
+                            indicatorColor: Colors.blue,
+                            indicatorBackgroundColor: Colors.grey,
+                            children: snapshot.data!.map((e) {
 
-                      );
-                    },),
+                              return Stack(
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                        image: DecorationImage(image: NetworkImage(ApiUrls.imageurl+e.image),
+                                            fit: BoxFit.cover
+                                        ),
+                                        borderRadius: BorderRadius.circular(20)
+                                    ),
+
+                                  ),
+
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 128.0,left: 10),
+                                    child: Column(
+                                      children: [
+                                        Text(e.title, style: TextStyle(
+                                            color: AppColors.text_white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold
+                                        ),),
+                                        SizedBox(height: 5,),
+                                        Text(e.description, style: TextStyle(
+                                            color: AppColors.text_white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.normal
+                                        ),),
+                                      ],
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                    ),
+                                  ),
+                                ],
+                              );
+
+                            }).toList(),
+
+
+
+                            onPageChanged: (value) {
+                              print('Page changed: $value');
+                            },
+                            autoPlayInterval: 9000,
+                            isLoop: true,
+                          );
+                        }
+                        else if(snapshot.connectionState == ConnectionState.waiting){
+                          return Container(
+                            decoration: BoxDecoration(
+                                image: DecorationImage(image: AssetImage("assets/images/logo.png"),
+                                ),
+                                borderRadius: BorderRadius.circular(20)
+                            ),
+
+                          );
+                        }
+                        else if (snapshot.hasError) {
+                          return Center(child: Text('${snapshot.error}'),);
+                        } else {
+                          return Center(child: CircularProgressIndicator(color: AppColors.primary_color,));
+                        }
+                      },)
+
 
 
                 ),
@@ -222,12 +273,19 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
 
+                        _weatherDescription == "clear sky" && _weatherDescription == "few clouds" && _weatherDescription == "scattered clouds" && _weatherDescription == "broken clouds" ?
                         imgicon == "" ? Text("") :
                         Container(
                           height: 150,
                           width: 150,
-                          child:   Image.asset("assets/icon/sun.png", fit: BoxFit.cover,),
+                          child:   Image.asset("assets/newicons/hali5.png", fit: BoxFit.cover,),
+                        ) : imgicon == "" ? Text("") :
+                        Container(
+                          height: 150,
+                          width: 150,
+                          child:  hours>=19 && hours<=05 ? Image.asset("assets/newicons/hali4.png", fit: BoxFit.cover,) : Image.asset("assets/newicons/hali5.png", fit: BoxFit.cover,) ,
                         ),
+
 
                         Column(
                           children: [
@@ -260,6 +318,26 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       Column(
                         children: [
+                          Image.asset("assets/icon/sunset.png", scale: 2,),
+                          Text(
+                            'Sunset',
+                            style: TextStyle(fontSize: 18),
+                          ),
+                          Text(
+                            '$_sunset',
+                            style: TextStyle(fontSize: 18),
+                          ),
+                        ],
+                      ),
+
+
+                      Text(
+                        '$_temperature\u00B0C',
+                        style: TextStyle(fontSize: 64),
+                      ),
+
+                      Column(
+                        children: [
                           Image.asset("assets/icon/sunrise.png"),
                           Text(
                             'Sunrise',
@@ -272,28 +350,6 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
 
-                      Text(
-                        '$_temperature C ',
-                        style: TextStyle(fontSize: 64),
-                      ),
-
-
-
-
-
-                      Column(
-                        children: [
-                          Image.asset("assets/icon/sunset.png", scale: 2,),
-                          Text(
-                            'Sunset',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                          Text(
-                            '$_sunset',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                        ],
-                      ),
                     ],
                   ),
 

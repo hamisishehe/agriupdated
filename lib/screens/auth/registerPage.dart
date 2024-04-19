@@ -1,9 +1,15 @@
 
+import 'dart:convert';
+
+import 'package:agriconnectfinal/contants/urls.dart';
+import 'package:agriconnectfinal/screens/pages/dashboardPage.dart';
+import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../contants/appcolors.dart';
 import 'loginPage.dart';
 
@@ -24,7 +30,74 @@ class _RegisterPageState extends State<RegisterPage> {
   GlobalKey<FormState> formkey =  GlobalKey<FormState>();
 
   bool isvisible = true;
+  bool isloading = false;
+  Future<void> register () async{
 
+    String registerurl = ApiUrls.mainurl+"auth/register";
+
+    try{
+      int status = 0;
+      var response =  await http.post(Uri.parse(registerurl),
+
+          body: {
+            'fullname':fullname.text,
+            'email':email.text,
+            'role':'user',
+            'password':password.text
+          });
+      print(registerurl);
+      if(response.statusCode == 200){
+        final responseData = json.decode(response.body);
+
+        if(responseData['message'] == "User Created Successfully"){
+          final token = responseData['token'];
+
+          // Save token in shared preferences
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString("usertoken", token);
+
+          Get.offAll(DashboardPage());
+
+          setState(() {
+            isloading = false;
+          });
+
+        } else if (responseData['message']['errors']['email'] == "The email has already been taken.") {
+          CoolAlert.show(
+            context: context,
+            type: CoolAlertType.error,
+            text: responseData['message'],
+          );
+
+        }
+        else{
+          CoolAlert.show(
+            context: context,
+            type: CoolAlertType.error,
+            text: responseData['message'],
+          );
+          // Alert(context: context, title: "Error", desc: "Something Error").show();
+          setState(() {
+            isloading = false;
+          });
+
+        }
+
+      }
+      else {
+        setState(() {
+          isloading = false;
+        });
+        throw Exception(response.body);
+      }
+
+    }
+    catch(e){
+      print(e.toString());
+    }
+
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,41 +171,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     ),
 
-                    SizedBox(height: 20,),
-
-                    TextFormField(
-                      validator: (value) {
-                        if(value!.isEmpty){
-                          return "Phone Number Required";
-                        }
-                      },
-                      keyboardType: TextInputType.phone,
-                      controller: phonenumber,
-                      decoration: InputDecoration(
-                          hintText: "Phonenumber",
-                          hintStyle: TextStyle(
-                              color: AppColors.text_black
-                          ),
-                          prefixIcon: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: CircleAvatar(
-                                backgroundColor: AppColors.primary_color,
-                                child: Icon(Icons.phone, color: AppColors.background_color, size: 20,),
-                                maxRadius: 10,
-                            ),
-                          ),
-
-                          focusedBorder:OutlineInputBorder(
-                              borderSide: BorderSide(color: AppColors.primary_color, width: 1),
-                              borderRadius: BorderRadius.circular(10)
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: AppColors.primary_color, width: 1),
-                              borderRadius: BorderRadius.circular(10)
-                          )
-                      ),
-
-                    ),
 
                     SizedBox(height: 20,),
 
@@ -178,8 +216,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     TextFormField(
                       validator: (value) {
-                        if(value!.isEmpty){
+                        if(value!.isEmpty ){
                           return "Password Required";
+                        }else if(value.length < 6){
+                          return "Password Should be 6 Character long";
                         }
                       },
                       keyboardType: TextInputType.visiblePassword,
@@ -234,14 +274,26 @@ class _RegisterPageState extends State<RegisterPage> {
 
                       child: ElevatedButton(
 
-                        onPressed: (){},
+                        onPressed: (){
+                          if(formkey.currentState!.validate()){
+                            setState(() {
+                              isloading = true;
+                            });
+                            register();
+                          }
+                          else{
+                            setState(() {
+                              isloading = false;
+                            });
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary_color,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10)
                             )
                         ),
-                        child: Text("Register", style: TextStyle(
+                        child: isloading ? CircularProgressIndicator(color: Colors.white,)  : Text("Register", style: TextStyle(
                             color: AppColors.text_white,
                             fontSize: 20,
                             fontWeight: FontWeight.bold

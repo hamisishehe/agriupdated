@@ -1,9 +1,15 @@
 
+import 'dart:convert';
+
+import 'package:agriconnectfinal/contants/urls.dart';
+import 'package:agriconnectfinal/screens/auth/authcheck.dart';
 import 'package:agriconnectfinal/screens/auth/registerPage.dart';
+import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../contants/appcolors.dart';
 import '../pages/dashboardPage.dart';
 
@@ -22,6 +28,76 @@ class _Login_PageState extends State<Login_Page> {
   GlobalKey<FormState> formkey =  GlobalKey<FormState>();
 
   bool isvisible = true;
+  bool isloading = false;
+
+
+
+
+
+  Future<void> login () async{
+
+    String loginurl = ApiUrls.mainurl+"auth/login";
+
+    var response =  await http.post(Uri.parse(loginurl),
+        body: {
+          'email':email.text, 'password':password.text
+        });
+
+    if(response.statusCode == 200){
+      final responseData = json.decode(response.body);
+      if(responseData['message'] == "Invalid Details"){
+
+        CoolAlert.show(
+          context: context,
+          type: CoolAlertType.error,
+          text: responseData['message'],
+        );
+
+
+        // Alert(context: context, title: "Error", desc: responseData['message']).show();
+        setState(() {
+          isloading = false;
+        });
+      }
+      if(responseData['message'] == "The email field must be a valid email address."){
+        CoolAlert.show(
+          context: context,
+          type: CoolAlertType.error,
+          text: responseData['message'],
+        );
+
+        // Alert(context: context, title: "Error", desc: responseData['message']).show();
+        setState(() {
+          isloading = false;
+        });
+      }
+      else{
+        final token = responseData['token'];
+        // Save token in shared preferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("usertoken", token);
+
+        print(token);
+        Get.offAll(AuthcheckPage());
+
+        setState(() {
+          isloading = false;
+        });
+
+      }
+
+    }
+    else {
+      setState(() {
+        isloading = false;
+      });
+
+      throw Exception("Error");
+    }
+
+
+
+  }
 
 
   @override
@@ -177,7 +253,17 @@ class _Login_PageState extends State<Login_Page> {
                       child: ElevatedButton(
 
                           onPressed: (){
-                            Get.to(DashboardPage());
+                            if(formkey.currentState!.validate()){
+                              setState(() {
+                                isloading = true;
+                              });
+                              login();
+                            }
+                            else{
+                              setState(() {
+                                isloading = false;
+                              });
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary_color,
@@ -185,7 +271,7 @@ class _Login_PageState extends State<Login_Page> {
                                   borderRadius: BorderRadius.circular(10)
                               )
                           ),
-                          child: Text("Login", style: TextStyle(
+                          child: isloading ? CircularProgressIndicator(color: Colors.white,)  : Text("Login", style: TextStyle(
                               color: AppColors.text_white,
                               fontSize: 20,
                               fontWeight: FontWeight.bold

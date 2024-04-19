@@ -1,4 +1,6 @@
+import 'package:agriconnectfinal/screens/auth/loginPage.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../contants/appcolors.dart';
 
@@ -28,10 +30,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
             ), ),
           ),
+          Image.asset(
+            "assets/images/logo.png",
+            width: 100,
+            height: 100,
 
-          SizedBox(
-            height: 130,
           ),
+
 
           Center(
             child: Column(
@@ -57,7 +62,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
                   child: ElevatedButton(
 
-                      onPressed: (){},
+                      onPressed: (){
+                        Get.to(Login_Page());
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary_color,
                         shape: RoundedRectangleBorder(
