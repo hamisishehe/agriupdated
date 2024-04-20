@@ -5,6 +5,7 @@ import 'package:agriconnectfinal/contants/urls.dart';
 import 'package:agriconnectfinal/model/user.dart';
 import 'package:agriconnectfinal/screens/auth/loginPage.dart';
 import 'package:agriconnectfinal/screens/auth/welcome.dart';
+import 'package:agriconnectfinal/screens/pages/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -20,7 +21,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-
+  ThemeMode _themeMode = ThemeMode.system;
   late String token;
 
   Future<void> getToken() async {
@@ -71,6 +72,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: Container(
         padding: EdgeInsets.only(),
@@ -113,6 +115,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Row(
                   children: [
                     CircleAvatar(
+                      backgroundColor: AppColors.primary_color.withOpacity(0.3) ,
                       maxRadius: 40,
                     ),
                     SizedBox(width: 20,),
@@ -126,13 +129,13 @@ class _ProfilePageState extends State<ProfilePage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(snapshot.data!.fullname, style: TextStyle(
-                                    color: AppColors.text_black,
+                                    color: isDarkMode ? AppColors.text_white.withOpacity(0.5): AppColors.text_black,
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold
                                 ),),
                                 SizedBox(height: 3,),
                                 Text(snapshot.data!.email, style: TextStyle(
-                                    color: AppColors.text_black,
+                                    color: isDarkMode ? AppColors.text_white.withOpacity(0.5): AppColors.text_black,
                                     fontSize: 15,
                                     fontWeight: FontWeight.bold
                                 ),),
@@ -153,7 +156,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                            backgroundColor:AppColors.primary_color
+                            backgroundColor:AppColors.primary_color.withOpacity(0.3)
                         ),
                         onPressed: (){}, child: Row(
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -178,7 +181,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ListTile(
               autofocus: true,
               title:  Text("Overview", style: TextStyle(
-                  color: AppColors.text_black.withOpacity(0.5),
+                  color: isDarkMode ? AppColors.text_white.withOpacity(0.5): AppColors.text_black.withOpacity(0.5),
                   fontSize: 20,
                   fontWeight: FontWeight.bold
               ),),
@@ -190,9 +193,12 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
 
             ListTile(
+              onTap: (){
+                Get.to(SettingsPage());
+              },
                 autofocus: true,
                 title:  Text("Settings", style: TextStyle(
-                    color: AppColors.text_black.withOpacity(0.5),
+                    color: isDarkMode ? AppColors.text_white.withOpacity(0.5): AppColors.text_black.withOpacity(0.5),
                     fontSize: 20,
                     fontWeight: FontWeight.bold
                 ),),
@@ -201,7 +207,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ListTile(
                 autofocus: true,
                 title:  Text("FAQ's", style: TextStyle(
-                    color: AppColors.text_black.withOpacity(0.5),
+                    color: isDarkMode ? AppColors.text_white.withOpacity(0.5): AppColors.text_black.withOpacity(0.5),
                     fontSize: 20,
                     fontWeight: FontWeight.bold
                 ),),
@@ -213,7 +219,7 @@ class _ProfilePageState extends State<ProfilePage> {
               },
                 autofocus: true,
                 title:  Text("Logout", style: TextStyle(
-                    color: AppColors.text_black.withOpacity(0.5),
+                    color: isDarkMode ? AppColors.text_white.withOpacity(0.5): AppColors.text_black.withOpacity(0.5),
                     fontSize: 20,
                     fontWeight: FontWeight.bold
                 ),),

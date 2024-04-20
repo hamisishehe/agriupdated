@@ -15,8 +15,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: Colors.white,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
 
@@ -42,13 +42,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             child: Column(
               children: [
                 Text("Sign in", style: TextStyle(
-                    color: Colors.black,
+                    color:isDarkMode ? AppColors.text_white : AppColors.text_black,
                     fontSize: 50,
                     fontWeight: FontWeight.bold
 
                 ), ),
                 Text("Continue with Email", style: TextStyle(
-                    color: Colors.black,
+                    color: isDarkMode ? AppColors.text_white : AppColors.text_black,
                     fontSize: 15,
                     fontWeight: FontWeight.bold
 

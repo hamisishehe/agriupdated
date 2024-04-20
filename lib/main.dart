@@ -1,3 +1,5 @@
+import 'package:agriconnectfinal/binding/networks_bindings.dart';
+import 'package:agriconnectfinal/contants/appcolors.dart';
 import 'package:agriconnectfinal/controller/injection.dart';
 import 'package:agriconnectfinal/screens/auth/loginPage.dart';
 import 'package:agriconnectfinal/screens/auth/splashscreen.dart';
@@ -25,7 +27,11 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      initialBinding: NetworkBindings(),
       debugShowCheckedModeBanner: false,
+      theme: AppColors.lightTheme,
+      darkTheme: AppColors.darkTheme,
+      themeMode: ThemeMode.system,
       home: SplashScreen(),
     );
   }

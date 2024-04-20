@@ -22,6 +22,7 @@ class Login_Page extends StatefulWidget {
 }
 
 class _Login_PageState extends State<Login_Page> {
+  ThemeMode _themeMode = ThemeMode.system;
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
 
@@ -102,12 +103,10 @@ class _Login_PageState extends State<Login_Page> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: AppColors.background_color,
       body: Stack(
         children: [
-
-
 
           Container(
             width: 250,
@@ -152,7 +151,7 @@ class _Login_PageState extends State<Login_Page> {
                       decoration: InputDecoration(
                         hintText: "Email",
                         hintStyle: TextStyle(
-                          color: AppColors.text_black
+                          color:isDarkMode? AppColors.text_white : AppColors.text_black
                         ),
                         prefixIcon: Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -189,7 +188,7 @@ class _Login_PageState extends State<Login_Page> {
                       decoration: InputDecoration(
                           hintText: "Password",
                           hintStyle: TextStyle(
-                              color: AppColors.text_black
+                              color: isDarkMode? AppColors.text_white : AppColors.text_black
                           ),
                           prefixIcon: Padding(
                             padding: const EdgeInsets.all(8.0),
@@ -280,7 +279,7 @@ class _Login_PageState extends State<Login_Page> {
 
                     SizedBox(height: 13,),
                     Text("Don't have an Account?", style: TextStyle(
-                        color: AppColors.text_black,
+                        color: isDarkMode? AppColors.text_white : AppColors.text_black,
                         fontSize: 14,
                         fontWeight: FontWeight.bold
                     ),),

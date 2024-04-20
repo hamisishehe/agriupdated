@@ -1,8 +1,11 @@
 import 'package:agriconnectfinal/contants/urls.dart';
 import 'package:agriconnectfinal/model/post.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:dialog_flowtter/dialog_flowtter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_slideshow/flutter_image_slideshow.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:gif_view/gif_view.dart';
 import 'package:http/http.dart' as http;
 import '../../contants/appcolors.dart';
@@ -17,6 +20,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  var connectivityResult;
+  void checkinternet() async{
+     setState(() async{
+       connectivityResult = await (Connectivity().checkConnectivity());
+     });
+  }
 
 
   String _apiKey = 'ff4e7a8d8bc25404758f29ce677b3a40';
@@ -96,11 +105,11 @@ class _HomePageState extends State<HomePage> {
 
   var hours = DateTime.now().hour;
 
-
+  ThemeMode _themeMode = ThemeMode.system;
 
   @override
   Widget build(BuildContext context) {
-
+    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: Stack(
         children: [
@@ -231,7 +240,7 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("overcast Clouds weather", style: TextStyle(
-                      color: AppColors.text_black,
+                      color: isDarkMode ? AppColors.text_white : AppColors.text_black,
                       fontSize: 15,
                       fontWeight: FontWeight.bold
                   ),),
@@ -283,7 +292,7 @@ class _HomePageState extends State<HomePage> {
                         Container(
                           height: 150,
                           width: 150,
-                          child:  hours>=19 && hours<=05 ? Image.asset("assets/newicons/hali4.png", fit: BoxFit.cover,) : Image.asset("assets/newicons/hali5.png", fit: BoxFit.cover,) ,
+                          child:  hours>=19 && hours<=05 ? Image.asset("assets/newicons/hali5.png", fit: BoxFit.cover,) : Image.asset("assets/newicons/hali4.png", fit: BoxFit.cover,) ,
                         ),
 
 

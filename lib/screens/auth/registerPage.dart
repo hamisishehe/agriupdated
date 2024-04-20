@@ -101,8 +101,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: AppColors.background_color,
       body: Stack(
         children: [
 
@@ -149,7 +149,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: InputDecoration(
                           hintText: "Full name",
                           hintStyle: TextStyle(
-                              color: AppColors.text_black
+                              color:isDarkMode? AppColors.text_white : AppColors.text_black
                           ),
                           prefixIcon: Padding(
                             padding: const EdgeInsets.all(8.0),
@@ -185,7 +185,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: InputDecoration(
                           hintText: "Email",
                           hintStyle: TextStyle(
-                              color: AppColors.text_black
+                              color: isDarkMode? AppColors.text_white : AppColors.text_black
                           ),
                           prefixIcon: Padding(
                             padding: const EdgeInsets.all(8.0),
@@ -228,7 +228,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: InputDecoration(
                           hintText: "Password",
                           hintStyle: TextStyle(
-                              color: AppColors.text_black
+                              color: isDarkMode? AppColors.text_white : AppColors.text_black
                           ),
                           prefixIcon: Padding(
                             padding: const EdgeInsets.all(8.0),
@@ -302,7 +302,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     SizedBox(height: 13,),
                     Text("have an Account?", style: TextStyle(
-                        color: AppColors.text_black,
+                        color: isDarkMode? AppColors.text_white : AppColors.text_black,
                         fontSize: 14,
                         fontWeight: FontWeight.bold
                     ),),

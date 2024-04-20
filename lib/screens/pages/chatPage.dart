@@ -11,7 +11,7 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-
+  ThemeMode _themeMode = ThemeMode.system;
   Color clr1 = AppColors.primary_color;
   late DialogFlowtter instance;
   final messageController = new TextEditingController();
@@ -49,6 +49,7 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: Container(
         margin: EdgeInsets.only(),
@@ -99,6 +100,9 @@ class _ChatPageState extends State<ChatPage> {
                       color: Color(0xffF2F4F6),
                       borderRadius: BorderRadius.all(Radius.circular(15))),
                   child: TextFormField(
+                    style: TextStyle(
+                      color: AppColors.text_black
+                    ),
                     controller: messageController,
                     decoration: InputDecoration(
                         hintText: "Send Message",
@@ -107,7 +111,7 @@ class _ChatPageState extends State<ChatPage> {
                         enabledBorder: InputBorder.none,
                         errorBorder: InputBorder.none,
                         disabledBorder: InputBorder.none),
-                    cursorColor: clr1,
+                    cursorColor: isDarkMode ? AppColors.primary_color : clr1,
                   ),
                 ),
                 trailing: GestureDetector(

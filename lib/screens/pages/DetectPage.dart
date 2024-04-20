@@ -203,22 +203,41 @@ class _DetectPageState extends State<DetectPage> {
       
       
       floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.primary_color,
         onPressed: (){
           // pickImage();
         },
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: PopupMenuButton(
+          popUpAnimationStyle: AnimationStyle.noAnimation,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all( Radius.circular(20))),
+
           itemBuilder: (context) => <PopupMenuEntry> [
+
             PopupMenuItem(
               value: "Take Picture",
-              child: IconButton(onPressed: (){}, icon: Icon(Icons.camera_alt, color: AppColors.primary_color,))
+              child: Row(
+                children: [
+                  IconButton(onPressed: (){
+
+                  }, icon: Icon(Icons.camera_alt, color: AppColors.primary_color,)),
+
+                  Text("From Camera")
+                ],
+              )
             ),
 
             PopupMenuItem(
                 value: "Take Picture",
-                child: IconButton(onPressed: (){
-                  pickImage();
-                }, icon: Icon(Icons.photo, color: AppColors.primary_color,))
+                child: Row(
+                  children: [
+                    IconButton(onPressed: (){
+                      pickImage();
+                    }, icon: Icon(Icons.photo, color: AppColors.primary_color,)),
+                    
+                    Text("From Gallery")
+                  ],
+                )
             ),
 
           ],
